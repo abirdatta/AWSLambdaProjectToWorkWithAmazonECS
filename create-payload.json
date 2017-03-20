@@ -1,0 +1,68 @@
+{
+  "updateOrCreate": "create",
+  "clusterName": "ecs-test-cluster",
+  "serviceName": "ecs-test-service",
+  "desiredCount": 1,
+  "containerDefinitions": [
+    {   
+      "memory": 500,
+      "portMappings": [
+        {
+          "hostPort": 8888,
+          "containerPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "name": "ecs-test-container",
+      "image": "abirdatta/poc:v59",
+      "essential": true,
+      "cpu": 1
+    }
+  ],
+  "family": "ecs-test",
+  "region": "us-east-1",
+  "vpcCidr": "10.0.0.0/16",
+  "subnets": [
+    {
+      "cidrBlock": "10.0.0.0/24",
+      "availabilityZone": "us-east-1a"
+    }
+  ],
+  "vpcName": "ecs-test-vpc-from-lambda",
+  "routeTableDestinationCidr": "0.0.0.0/0",
+  "autoScalingGroupConfiguration": 
+    {
+      "autoScalingLaunchConfigurationName": "ecs-instances-launch-configuration", 
+      "autoScalingGroupName": "ecs-instances-auto-scaling-group",
+      "desiredCapacity": 2,
+      "maxSize": 2,
+      "minSize": 1,
+      "availabilityZones": ["us-east-1a"]
+    },
+  "autoScalingLaunchConfiguration": 
+    {
+      "autolaunchConfigurationName": "ecs-instances-launch-configuration",
+      "amiImageId": "ami-b2df2ca4",
+      "instanceType": "t2.micro",
+      "iamInstanceProfile": "ecsInstanceRole",
+      "keyName": "ec2-jenkins"
+    },
+  "loadBalancerConfiguration": 
+    {
+      "loadBalancerName": "ecs-test-elb",
+      "loadBalancerListeners" :[
+        {
+          "instancePort": 8888,
+          "instanceProtocol": "HTTP",
+          "loadBalancerPort": 8888,
+          "loadBalancerProtocol": "HTTP"
+        }
+      ],
+      "healthCheckHealthyThreshold": 10,
+      "healthCheckUnHealthyThreshold": 2, 
+      "healthCheckInterval": 30,
+      "healthCheckTimeout": 5,
+      "healthCheckTarget": "HTTP:8888/"
+    },
+  "ecsServiceRole": "ecsServiceRole" 
+}
