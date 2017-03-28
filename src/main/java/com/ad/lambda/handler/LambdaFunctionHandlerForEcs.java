@@ -112,7 +112,7 @@ public class LambdaFunctionHandlerForEcs implements RequestHandler<ECSServiceReq
 
         AmazonElasticLoadBalancingClient elasticLoadBalancingClient = (AmazonElasticLoadBalancingClient) AmazonElasticLoadBalancingClientBuilder
                 .standard().withCredentials(awsCredentialsProvider).withRegion(eCSServiceRequest.getRegion()).build();
-        
+
         AmazonCloudFormationClient cloudformationClient = (AmazonCloudFormationClient) AmazonCloudFormationClientBuilder
                 .standard().withCredentials(awsCredentialsProvider).withRegion(eCSServiceRequest.getRegion()).build();
 
@@ -120,13 +120,18 @@ public class LambdaFunctionHandlerForEcs implements RequestHandler<ECSServiceReq
 
             RegisterTaskDefinitionResult registerTaskDefinitionResult = ecsClient
                     .registerTaskDefinition(createRegisterTaskDefinitionRequest(eCSServiceRequest));
+            logger.info("New revision ****" + registerTaskDefinitionResult.getTaskDefinition().getRevision()
+                    + "**** of task ****" + registerTaskDefinitionResult.getTaskDefinition().getFamily()
+                    + "**** registered.");
 
             UpdateServiceRequest updateServiceRequest = createUpdateServiceRequest(
                     registerTaskDefinitionResult.getTaskDefinition().getFamily() + ":"
                             + registerTaskDefinitionResult.getTaskDefinition().getRevision(),
                     eCSServiceRequest);
-
             UpdateServiceResult updateServiceResult = ecsClient.updateService(updateServiceRequest);
+            logger.info("ECS service ****" + updateServiceResult.getService().getServiceName() + "**** updated.");
+            logger.info("ECS service running with task ****" + updateServiceResult.getService().getTaskDefinition()
+                    + "****");
         } else {
 
             CreateVpcResult createVpcResult = createVPC(ec2Client, eCSServiceRequest);
@@ -191,7 +196,8 @@ public class LambdaFunctionHandlerForEcs implements RequestHandler<ECSServiceReq
         List<LoadBalancer> ecsLoadBalancers = new ArrayList<LoadBalancer>();
         ecsLoadBalancers.add(ecsLoadbalancer);
         CreateServiceRequest createServiceRequest = new CreateServiceRequest()
-                .withCluster(eCSServiceRequest.getClusterName()).withDesiredCount(eCSServiceRequest.getDesiredCount()).withLoadBalancers(ecsLoadBalancers)
+                .withCluster(eCSServiceRequest.getClusterName()).withDesiredCount(eCSServiceRequest.getDesiredCount())
+                .withLoadBalancers(ecsLoadBalancers)
                 .withTaskDefinition(registerTaskDefinitionResult.getTaskDefinition().getFamily())
                 .withServiceName(eCSServiceRequest.getServiceName()).withRole(eCSServiceRequest.getEcsServiceRole());
 

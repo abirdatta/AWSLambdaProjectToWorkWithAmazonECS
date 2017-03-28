@@ -13,7 +13,7 @@
           "protocol": "tcp"
         }
       ],
-      "name": "simple-webapp-container",
+      "name": "ecs-test-container",
       "image": "abirdatta/poc:v59",
       "essential": true,
       "cpu": 1
